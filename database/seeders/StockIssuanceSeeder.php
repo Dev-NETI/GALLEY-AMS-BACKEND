@@ -20,28 +20,6 @@ class StockIssuanceSeeder extends Seeder
         $emp   = fn (string $id) => Employee::where('employee_id', $id)->first();
 
         $issuances = [
-            // ── BOD: Clothing to employees ────────────────────────────────
-            [
-                'item'           => 'Staff T-Shirt',
-                'dept_code'      => 'BOD',
-                'quantity'       => 5,
-                'issued_to_type' => 'employee',
-                'issued_to_id'   => 'EMP-004',
-                'purpose'        => 'Monthly uniform issuance',
-                'reference_no'   => 'ISS-BOD-001',
-                'issued_at'      => now()->subDays(30),
-            ],
-            [
-                'item'           => 'Staff Polo Shirt',
-                'dept_code'      => 'BOD',
-                'quantity'       => 3,
-                'issued_to_type' => 'employee',
-                'issued_to_id'   => 'EMP-005',
-                'purpose'        => 'New employee uniform',
-                'reference_no'   => 'ISS-BOD-002',
-                'issued_at'      => now()->subDays(20),
-            ],
-
             // ── GOD: Food to department ────────────────────────────────────
             [
                 'item'           => 'Chicken Breast',
@@ -55,7 +33,7 @@ class StockIssuanceSeeder extends Seeder
                 'issued_at'      => now()->subDays(7),
             ],
             [
-                'item'           => 'White Rice',
+                'item'           => 'Long Grain Rice',
                 'dept_code'      => 'GOD',
                 'quantity'       => 2,
                 'issued_to_type' => 'department',
@@ -75,84 +53,6 @@ class StockIssuanceSeeder extends Seeder
                 'purpose'        => 'Monthly cooking supply',
                 'reference_no'   => 'ISS-GOD-003',
                 'issued_at'      => now()->subDays(10),
-            ],
-
-            // ── DOD: Bedding to employees ──────────────────────────────────
-            [
-                'item'           => 'Blanket',
-                'dept_code'      => 'DOD',
-                'quantity'       => 10,
-                'issued_to_type' => 'employee',
-                'issued_to_id'   => 'EMP-013',
-                'purpose'        => 'New dormitory occupant supplies',
-                'reference_no'   => 'ISS-DOD-001',
-                'issued_at'      => now()->subDays(15),
-            ],
-            [
-                'item'           => 'Pillow',
-                'dept_code'      => 'DOD',
-                'quantity'       => 10,
-                'issued_to_type' => 'employee',
-                'issued_to_id'   => 'EMP-013',
-                'purpose'        => 'New dormitory occupant supplies',
-                'reference_no'   => 'ISS-DOD-002',
-                'issued_at'      => now()->subDays(15),
-            ],
-            [
-                'item'           => 'Bed Sheet Set',
-                'dept_code'      => 'DOD',
-                'quantity'       => 8,
-                'issued_to_type' => 'employee',
-                'issued_to_id'   => 'EMP-014',
-                'purpose'        => 'Quarterly linen replacement',
-                'reference_no'   => 'ISS-DOD-003',
-                'issued_at'      => now()->subDays(5),
-            ],
-
-            // ── HRAD: Office supplies to employees ────────────────────────
-            [
-                'item'           => 'Bond Paper (A4)',
-                'dept_code'      => 'HRAD',
-                'quantity'       => 5,
-                'issued_to_type' => 'employee',
-                'issued_to_id'   => 'EMP-008',
-                'purpose'        => 'Monthly office supplies',
-                'reference_no'   => 'ISS-HRAD-001',
-                'issued_at'      => now()->subDays(8),
-            ],
-            [
-                'item'           => 'Ballpen',
-                'dept_code'      => 'HRAD',
-                'quantity'       => 2,
-                'issued_to_type' => 'employee',
-                'issued_to_id'   => 'EMP-009',
-                'purpose'        => 'Monthly writing supplies',
-                'reference_no'   => 'ISS-HRAD-002',
-                'issued_at'      => now()->subDays(8),
-            ],
-
-            // ── PRPD: Office supplies ──────────────────────────────────────
-            [
-                'item'           => 'Bond Paper (A4)',
-                'dept_code'      => 'PRPD',
-                'quantity'       => 10,
-                'issued_to_type' => 'employee',
-                'issued_to_id'   => 'EMP-006',
-                'purpose'        => 'Research documentation supplies',
-                'reference_no'   => 'ISS-PRPD-001',
-                'issued_at'      => now()->subDays(12),
-            ],
-
-            // ── FIN: Office supplies ───────────────────────────────────────
-            [
-                'item'           => 'Bond Paper (A4)',
-                'dept_code'      => 'FIN',
-                'quantity'       => 5,
-                'issued_to_type' => 'employee',
-                'issued_to_id'   => 'EMP-015',
-                'purpose'        => 'Financial reports printing',
-                'reference_no'   => 'ISS-FIN-001',
-                'issued_at'      => now()->subDays(3),
             ],
         ];
 

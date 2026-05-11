@@ -27,6 +27,13 @@ class UnitSeeder extends Seeder
             ['name' => 'Bottle',      'abbreviation' => 'btl'],
             ['name' => 'Can',         'abbreviation' => 'can'],
             ['name' => 'Sack',        'abbreviation' => 'sack'],
+            ['name' => 'Tray',        'abbreviation' => 'tray'],
+            ['name' => 'Tub',         'abbreviation' => 'tub'],
+            ['name' => 'Sachet',      'abbreviation' => 'sachet'],
+            ['name' => 'Tin',         'abbreviation' => 'tin'],
+            ['name' => 'Packet',      'abbreviation' => 'packet'],
+            ['name' => 'Canister',    'abbreviation' => 'canister'],
+            ['name' => 'Case',        'abbreviation' => 'case'],
         ];
 
         foreach ($units as $unit) {

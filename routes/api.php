@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\EmployeeController;
+use App\Http\Controllers\Api\GalleyInventoryController;
 use App\Http\Controllers\Api\InventoryStockController;
 use App\Http\Controllers\Api\ItemAssetController;
 use App\Http\Controllers\Api\ItemController;
@@ -91,4 +92,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Issue consumable stock to person/department (creates StockIssuance + decrements InventoryStock)
     Route::apiResource('stock-issuances', StockIssuanceController::class)
         ->only(['index', 'show', 'store']);
+
+    // ── Galley daily inventory sheet ──────────────────────────────────────────
+    // Custom action MUST be before the index GET to avoid route conflicts
+    Route::post('galley-inventory/remark', [GalleyInventoryController::class, 'saveRemark']);
+    Route::get('galley-inventory',         [GalleyInventoryController::class, 'index']);
 });
