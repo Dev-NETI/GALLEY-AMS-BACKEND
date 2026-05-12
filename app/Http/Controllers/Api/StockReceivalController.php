@@ -68,7 +68,6 @@ class StockReceivalController extends Controller
             'item_id'              => 'required|exists:items,id',
             'department_id'        => $user->isSystemAdmin() ? 'required|exists:departments,id' : 'nullable|exists:departments,id',
             'quantity'             => 'required|numeric|min:0.01',
-            'unit_cost'            => 'nullable|numeric|min:0',
             'supplier_id'          => 'nullable|exists:suppliers,id',
             'delivery_receipt_no'  => 'nullable|string|max:100',
             'delivery_receipt_file'=> 'nullable|file|mimes:pdf|max:5120',
@@ -104,7 +103,6 @@ class StockReceivalController extends Controller
                 'item_id'               => $validated['item_id'],
                 'department_id'         => $validated['department_id'],
                 'quantity'              => $validated['quantity'],
-                'unit_cost'             => $validated['unit_cost'] ?? null,
                 'supplier_id'           => $validated['supplier_id'] ?? null,
                 'delivery_receipt_no'   => $validated['delivery_receipt_no'] ?? null,
                 'delivery_receipt_file' => $filePath,
@@ -154,13 +152,13 @@ class StockReceivalController extends Controller
         $suppliers = Supplier::orderBy('name')->pluck('name')->toArray();
 
         $headers = [
-            'Item Name', 'Department', 'Quantity', 'Unit Cost',
+            'Item Name', 'Department', 'Quantity',
             'Supplier', 'Delivery Receipt No', 'Date Received', 'Notes',
         ];
 
         $sampleRows = [
-            [$items[0] ?? 'Chicken Breast', $depts[0] ?? 'GOD', 20, 185.00, $suppliers[0] ?? '', 'DR-2025-001', date('Y-m-d'), 'Initial stock'],
-            [$items[1] ?? 'Bond Paper A4',  $depts[0] ?? 'PRPD', 10, 350.00, $suppliers[0] ?? '', '',            date('Y-m-d'), ''],
+            [$items[0] ?? 'Chicken Breast', $depts[0] ?? 'GOD', 20, $suppliers[0] ?? '', 'DR-2025-001', date('Y-m-d'), 'Initial stock'],
+            [$items[1] ?? 'Bond Paper A4',  $depts[0] ?? 'PRPD', 10, $suppliers[0] ?? '', '',            date('Y-m-d'), ''],
         ];
 
         $spreadsheet = $this->createTemplateSpreadsheet(
@@ -170,7 +168,6 @@ class StockReceivalController extends Controller
             "• Item Name   — must match an existing consumable item name.\n" .
             "• Department  — required for admin users; ignored for department users (your dept is used).\n" .
             "• Quantity    — required; positive number.\n" .
-            "• Unit Cost   — optional; cost per unit in PHP.\n" .
             "• Supplier    — optional; must match an existing supplier name.\n" .
             "• Delivery Receipt No — optional; free text.\n" .
             "• Date Received — optional; format YYYY-MM-DD. Defaults to today if blank.\n" .
@@ -215,7 +212,7 @@ class StockReceivalController extends Controller
 
         $addDropdown('A2', 'A2:A1000', "'_ref'!\$A\$1:\$A\${$itemCount}");
         $addDropdown('B2', 'B2:B1000', "'_ref'!\$B\$1:\$B\${$deptCount}");
-        $addDropdown('E2', 'E2:E1000', "'_ref'!\$C\$1:\$C\${$suppCount}");
+        $addDropdown('D2', 'D2:D1000', "'_ref'!\$C\$1:\$C\${$suppCount}");
 
         return $this->streamXlsxDownload($spreadsheet, 'stock_receivals_template.xlsx');
     }
@@ -253,7 +250,6 @@ class StockReceivalController extends Controller
             $itemName = trim((string) ($row['item_name'] ?? $row['item'] ?? ''));
             $deptName = trim((string) ($row['department'] ?? ''));
             $qtyRaw   = trim((string) ($row['quantity'] ?? ''));
-            $unitCost = trim((string) ($row['unit_cost'] ?? ''));
             $suppName = trim((string) ($row['supplier'] ?? ''));
             $drNo     = trim((string) ($row['delivery_receipt_no'] ?? ''));
             $dateRaw  = trim((string) ($row['date_received'] ?? ''));
@@ -274,12 +270,6 @@ class StockReceivalController extends Controller
             // ── Validate quantity ─────────────────────────────────────────
             if ($qtyRaw === '' || ! is_numeric($qtyRaw) || (float) $qtyRaw <= 0) {
                 $errors[] = ['row' => $rowNum, 'name' => $itemName, 'message' => 'Quantity must be a positive number.'];
-                continue;
-            }
-
-            // ── Validate unit cost ────────────────────────────────────────
-            if ($unitCost !== '' && (! is_numeric($unitCost) || (float) $unitCost < 0)) {
-                $errors[] = ['row' => $rowNum, 'name' => $itemName, 'message' => 'Unit Cost must be a non-negative number.'];
                 continue;
             }
 
@@ -324,7 +314,7 @@ class StockReceivalController extends Controller
 
             // ── Persist ───────────────────────────────────────────────────
             try {
-                DB::transaction(function () use ($item, $deptId, $qtyRaw, $unitCost, $suppId, $drNo, $receivedAt, $notes, $user) {
+                DB::transaction(function () use ($item, $deptId, $qtyRaw, $suppId, $drNo, $receivedAt, $notes, $user) {
                     $stock = InventoryStock::firstOrCreate(
                         ['item_id' => $item->id, 'department_id' => $deptId],
                         ['quantity' => 0]
@@ -335,7 +325,6 @@ class StockReceivalController extends Controller
                         'item_id'              => $item->id,
                         'department_id'        => $deptId,
                         'quantity'             => (float) $qtyRaw,
-                        'unit_cost'            => $unitCost !== '' ? (float) $unitCost : null,
                         'supplier_id'          => $suppId,
                         'delivery_receipt_no'  => $drNo ?: null,
                         'received_by'          => $user->id,

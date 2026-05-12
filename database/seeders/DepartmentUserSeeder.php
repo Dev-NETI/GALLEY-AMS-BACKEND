@@ -22,12 +22,13 @@ class DepartmentUserSeeder extends Seeder
             'inventory-stocks',
             'stock-receivals',
             'stock-issuances',
+            'units'
         ]);
 
         $users = [
             [
-                'name'          => 'GOD Administrator',
-                'email'         => 'god@neti.com.ph',
+                'name'          => 'Ariel Sotto',
+                'email'         => 'ariel.sotto@neti.com.ph',
                 'password'      => Hash::make('password'),
                 'user_type'     => 'employee',
                 'department_id' => $dept('GOD'),
