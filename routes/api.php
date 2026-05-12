@@ -94,7 +94,9 @@ Route::middleware('auth:sanctum')->group(function () {
         ->only(['index', 'show', 'store']);
 
     // ── Galley daily inventory sheet ──────────────────────────────────────────
-    // Custom action MUST be before the index GET to avoid route conflicts
-    Route::post('galley-inventory/remark', [GalleyInventoryController::class, 'saveRemark']);
-    Route::get('galley-inventory',         [GalleyInventoryController::class, 'index']);
+    // Custom actions MUST be before the index GET to avoid route conflicts
+    Route::post('galley-inventory/import',   [GalleyInventoryController::class, 'import']);
+    Route::get('galley-inventory/template',  [GalleyInventoryController::class, 'template']);
+    Route::post('galley-inventory/remark',   [GalleyInventoryController::class, 'saveRemark']);
+    Route::get('galley-inventory',           [GalleyInventoryController::class, 'index']);
 });

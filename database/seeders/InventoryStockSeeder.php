@@ -17,16 +17,16 @@ class InventoryStockSeeder extends Seeder
         $admin = User::first();
         $dept  = fn(string $code) => Department::where('code', $code)->first()?->id;
         $item  = fn(string $name) => Item::where('name', $name)->first()?->id;
-        $supp  = fn(string $name) => Supplier::where('name', 'like', "%{$name}%")->first()?->id;
+        $supp  = fn(string $name) => Supplier::where('name', $name)->first()?->id;
 
         $stocks = [
             // ── GOD: Food ─────────────────────────────────────────────────
-            ['item' => 'Chicken Breast',  'dept' => 'GOD', 'qty' => 50, 'supplier' => 'FreshMart', 'unit_cost' => 180.00],
-            ['item' => 'Liempo',          'dept' => 'GOD', 'qty' => 40, 'supplier' => 'FreshMart', 'unit_cost' => 220.00],
-            ['item' => 'Fish Fillet',     'dept' => 'GOD', 'qty' => 30, 'supplier' => 'FreshMart', 'unit_cost' => 150.00],
-            ['item' => 'Long Grain Rice', 'dept' => 'GOD', 'qty' => 10, 'supplier' => 'FreshMart', 'unit_cost' => 2800.00],
-            ['item' => 'Cooking Oil',     'dept' => 'GOD', 'qty' => 20, 'supplier' => 'FreshMart', 'unit_cost' => 95.00],
-            ['item' => 'Dishwashing Liquid', 'dept' => 'GOD', 'qty' => 12, 'supplier' => 'FreshMart', 'unit_cost' => 65.00],
+            ['item' => 'Chicken Breast',     'dept' => 'GOD', 'qty' => 50, 'supplier' => 'Gerabelle Foods'],
+            ['item' => 'Liempo',             'dept' => 'GOD', 'qty' => 40, 'supplier' => 'JCL Fruit and Vegetables Wholesaling'],
+            ['item' => 'Fish Fillet',        'dept' => 'GOD', 'qty' => 30, 'supplier' => 'JCL Fruit and Vegetables Wholesaling'],
+            ['item' => 'Long Grain Rice',    'dept' => 'GOD', 'qty' => 10, 'supplier' => 'Ekol Trading'],
+            ['item' => 'Cooking Oil',        'dept' => 'GOD', 'qty' => 20, 'supplier' => 'TND Marketing'],
+            ['item' => 'Dishwashing Liquid', 'dept' => 'GOD', 'qty' => 12, 'supplier' => 'Oxychem'],
         ];
 
         foreach ($stocks as $s) {
@@ -48,7 +48,6 @@ class InventoryStockSeeder extends Seeder
                 'item_id'       => $itemId,
                 'department_id' => $deptId,
                 'quantity'      => $s['qty'],
-                'unit_cost'     => $s['unit_cost'],
                 'supplier_id'   => $supp($s['supplier']),
                 'received_by'   => $admin->id,
                 'received_at'   => now()->subDays(rand(7, 60)),

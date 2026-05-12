@@ -14,7 +14,6 @@ class StockReceival extends Model
         'item_id',
         'department_id',
         'quantity',
-        'unit_cost',
         'supplier_id',
         'delivery_receipt_no',
         'delivery_receipt_file',
@@ -26,7 +25,6 @@ class StockReceival extends Model
     protected $casts = [
         'received_at' => 'datetime',
         'quantity'    => 'decimal:2',
-        'unit_cost'   => 'decimal:2',
     ];
 
     public function item(): BelongsTo
