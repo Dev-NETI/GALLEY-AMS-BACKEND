@@ -12,359 +12,369 @@ class ItemSeeder extends Seeder
 {
     public function run(): void
     {
-        $pcs  = Unit::where('abbreviation', 'pcs')->first()->id;
-        $kg   = Unit::where('abbreviation', 'kg')->first()->id;
-        $L    = Unit::where('abbreviation', 'L')->first()->id;
-        $set  = Unit::where('abbreviation', 'set')->first()->id;
-        $sack = Unit::where('abbreviation', 'sack')->first()->id;
-        $btl  = Unit::where('abbreviation', 'btl')->first()->id;
-        $pack = Unit::where('abbreviation', 'pack')->first()->id;
-        $box  = Unit::where('abbreviation', 'box')->first()->id;
-        $can  = Unit::where('abbreviation', 'can')->first()->id;
-        $roll = Unit::where('abbreviation', 'roll')->first()->id;
-        $pair = Unit::where('abbreviation', 'pair')->first()->id;
+        $u = fn(string $abbr) => Unit::where('abbreviation', $abbr)->value('id');
 
-        $dept = fn(string $code) => Department::where('code', $code)->first()?->id;
+        $kg       = $u('kg');
+        $pcs      = $u('pcs');
+        $pack     = $u('pack');
+        $sack     = $u('sack');
+        $tray     = $u('tray');
+        $btl      = $u('btl');
+        $roll     = $u('roll');
+        $can      = $u('can');
+        $tub      = $u('tub');
+        $tin      = $u('tin');
+        $sachet   = $u('sachet');
+        $packet   = $u('packet');
+        $canister = $u('canister');
+        $cs       = $u('case');
+        $cby      = $u('cby');
+        $bundle   = $u('bundle');
 
-        $cat = fn(string $catName, string $deptCode) => Category::where('name', $catName)
-            ->where('department_id', $dept($deptCode))
-            ->first()?->id;
+        $deptId = Department::where('code', 'GOD')->value('id');
+        $getCat = fn(string $name) => Category::where('name', $name)
+            ->where('department_id', $deptId)
+            ->value('id');
 
-        $god = 'GOD';
+        // Pre-resolve category IDs
+        $BEEF     = $getCat('BEEF');
+        $PORK     = $getCat('PORK');
+        $CHICKEN  = $getCat('CHICKEN');
+        $SEAFOOD  = $getCat('SEAFOOD');
+        $PROC     = $getCat('PROCESSED MEATS');
+        $VEG      = $getCat('VEGETABLES');
+        $FRUITS   = $getCat('FRESH FRUITS');
+        $RICE     = $getCat('RICE');
+        $EGGS     = $getCat('EGGS');
+        $COND     = $getCat('CONDIMENTS');
+        $SEAS     = $getCat('SEASONING');
+        $NOODLES  = $getCat('NOODLES & PASTA');
+        $OIL      = $getCat('OIL');
+        $SUGAR    = $getCat('SUGAR / OTHERS');
+        $CANNED   = $getCat('CANNED GOODS');
+        $SUPPLIES = $getCat('SUPPLIES');
+        $OTHERS   = $getCat('OTHERS');
+        $CLEANING = $getCat('CLEANING MATERIALS');
+        $WATER    = $getCat('BOTTLED WATER');
+
+        $c = fn(string $name, string $desc, $catId, $unitId) => [
+            'name'            => $name,
+            'description'     => $desc,
+            'category_id'     => $catId,
+            'unit_id'         => $unitId,
+            'item_type'       => 'consumable',
+            'brand'           => null,
+            'model'           => null,
+            'specifications'  => null,
+            'min_stock_level' => 20,
+            'department_id'   => $deptId,
+        ];
 
         $items = [
 
-            // ── FIXED ASSETS ──────────────────────────────────────────────
+            // ── BEEF ─────────────────────────────────────────────────────────
+            $c('Beef - Sliced',    'Thinly sliced beef cuts for stir-fry and main dishes',          $BEEF, $kg),
+            $c('Beef Brisket',     'Beef brisket cut for stews and braises',                        $BEEF, $kg),
+            $c('Bulalo / Kansi',   'Beef shank with bone marrow for bulalo soup',                   $BEEF, $kg),
+            $c('Ground Beef',      'Minced beef for burgers, pasta, and meat dishes',               $BEEF, $kg),
+            $c('Oxtripe',          'Beef tripe for kare-kare and callos',                           $BEEF, $kg),
+            $c('Top Round Beef',   'Lean top round beef cut for roasting and steak',                $BEEF, $kg),
 
-            ['name' => 'Toshiba Inverter Refrigerator', 'description' => 'Commercial upright inverter refrigerator for food storage',  'category_id' => $cat('SUPPLIES', $god), 'unit_id' => $pcs, 'item_type' => 'fixed_asset', 'brand' => 'Toshiba', 'model' => 'GR-A28 Inverter',       'specifications' => ['capacity' => '268L', 'cooling' => 'Inverter Compressor', 'configuration' => '2-door Top-freezer'], 'min_stock_level' => 0, 'department_id' => $dept($god)],
-            ['name' => 'Modena Commercial Gas Range',   'description' => '6-burner commercial gas range with oven and auto-ignition',  'category_id' => $cat('SUPPLIES', $god), 'unit_id' => $pcs, 'item_type' => 'fixed_asset', 'brand' => 'Modena', 'model' => 'CS 6640 EX',            'specifications' => ['burners' => '6 cast-iron', 'ignition' => 'Auto-ignition', 'oven' => 'Yes, electric'],              'min_stock_level' => 0, 'department_id' => $dept($god)],
-            ['name' => 'Meyer Accolade Cookware Set',   'description' => '14-piece tri-ply stainless steel commercial cookware set',   'category_id' => $cat('SUPPLIES', $god), 'unit_id' => $set, 'item_type' => 'fixed_asset', 'brand' => 'Meyer',   'model' => 'Accolade Series 14-Piece', 'specifications' => ['pieces' => 14, 'material' => 'Tri-ply stainless steel', 'induction_ready' => true],            'min_stock_level' => 0, 'department_id' => $dept($god)],
+            // ── PORK ─────────────────────────────────────────────────────────
+            $c('Bopis',                        'Pork lungs and heart for spicy bopis dish',         $PORK, $kg),
+            $c('Ground Pork',                  'Minced pork for fillings and meat dishes',          $PORK, $kg),
+            $c('Liempo',                       'Pork belly cut for grilling and braising',          $PORK, $kg),
+            $c('Liempo Slice',                 'Sliced pork belly for quick cooking',               $PORK, $kg),
+            $c('Pork BBQ',                     'Pork cuts on skewer for barbecue',                  $PORK, $pcs),
+            $c('Pork Chop',                    'Pork chop cut for frying and grilling',             $PORK, $kg),
+            $c('Pork Liver',                   'Pork liver for adobo and sautéed dishes',           $PORK, $kg),
+            $c('Pork Gizzard (Balunbalunan)',   'Pork gizzard for soups and stir-fry',              $PORK, $kg),
+            $c('Pork Maskara',                 'Pork face cut for sinigang and local dishes',       $PORK, $kg),
+            $c('Pork Pata',                    'Pork leg for crispy pata and pata tim',             $PORK, $kg),
+            $c('Pork Pigue',                   'Pork shoulder cut for roasting and lechon',         $PORK, $kg),
+            $c('Spareribs',                    'Pork spareribs for BBQ and sinigang',               $PORK, $kg),
 
-            // ── BEEF ──────────────────────────────────────────────────────
+            // ── CHICKEN ──────────────────────────────────────────────────────
+            $c('Chicken Breast',   'Boneless chicken breast for grilling and frying',               $CHICKEN, $kg),
+            $c('Chicken Gizzard',  'Chicken gizzard for soups and sautéed dishes',                  $CHICKEN, $kg),
+            $c('Chicken Liver',    'Chicken liver for adobo and sautéed dishes',                    $CHICKEN, $kg),
+            $c('Chicken Thigh',    'Chicken thigh cut for roasting and braising',                   $CHICKEN, $kg),
+            $c('Chicken Whole',    'Whole chicken for roasting and lechon manok',                   $CHICKEN, $kg),
+            $c('Chicken Wings',    'Chicken wings for frying and grilling',                         $CHICKEN, $kg),
 
-            ['name' => 'Beef - Sliced',  'description' => 'Sliced beef for stir-fry and dishes', 'category_id' => $cat('BEEF', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Beef Brisket',   'description' => 'Beef brisket cut',                    'category_id' => $cat('BEEF', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Bulalo / Kansi', 'description' => 'Beef shank and marrow for bulalo',    'category_id' => $cat('BEEF', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Ground Beef',    'description' => 'Ground beef',                         'category_id' => $cat('BEEF', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Oxtripe',        'description' => 'Beef tripe',                          'category_id' => $cat('BEEF', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Top Round Beef', 'description' => 'Top round beef cut',                  'category_id' => $cat('BEEF', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
+            // ── SEAFOOD ──────────────────────────────────────────────────────
+            $c('Alumahan',             'Round scad fish for frying and sinigang',                   $SEAFOOD, $kg),
+            $c('Bagoong Alamang',      'Shrimp paste condiment and cooking ingredient',             $SEAFOOD, $kg),
+            $c('Bisugo',               'Threadfin bream fish for frying and soups',                 $SEAFOOD, $kg),
+            $c('Daing na Bangus',      'Dried marinated milkfish for frying',                       $SEAFOOD, $pack),
+            $c('Daing na Galunggong',  'Dried round scad for frying',                               $SEAFOOD, $pack),
+            $c('Dalagang Bukid',       'Fusilier fish for frying and soups',                        $SEAFOOD, $kg),
+            $c('Dry Dilis',            'Dried anchovies for snacks and side dishes',                $SEAFOOD, $kg),
+            $c('Fish Fillet',          'Boneless fish fillet for frying and baking',                $SEAFOOD, $kg),
+            $c('Galunggong',           'Round scad fish for frying and soups',                      $SEAFOOD, $kg),
+            $c('Hasa-hasa',            'Short-bodied mackerel for frying and sinigang',             $SEAFOOD, $kg),
+            $c('Matangbaka',           'Big-eyed scad fish for frying',                             $SEAFOOD, $kg),
+            $c('Maya-maya',            'Red snapper fish for kinilaw and frying',                   $SEAFOOD, $kg),
+            $c('Bangus Boneless',      'Deboned milkfish for grilling and frying',                  $SEAFOOD, $kg),
+            $c('Mussels',              'Fresh mussels for soups and pasta',                         $SEAFOOD, $kg),
+            $c('Okoy',                 'Fresh small shrimp for okoy fritter',                       $SEAFOOD, $kg),
+            $c('Pink Salmon Head',     'Pink salmon head for sinigang and soups',                   $SEAFOOD, $kg),
+            $c('Salmon Local',         'Local salmon for grilling and sinigang',                    $SEAFOOD, $kg),
+            $c('Shrimp / Swahe',       'Fresh shrimp for sautéed dishes and soups',                 $SEAFOOD, $kg),
+            $c('Squid',                'Fresh squid for adobo and grilling',                        $SEAFOOD, $kg),
+            $c('Tambakol',             'Yellowfin tuna for grilling and kinilaw',                   $SEAFOOD, $kg),
+            $c('Tilapia Whole',        'Whole tilapia for frying and sinigang',                     $SEAFOOD, $kg),
+            $c('Tulingan',             'Bullet tuna for sinigang and frying',                       $SEAFOOD, $kg),
+            $c('Tuyo Salinas',         'Salted dried fish for breakfast and side dishes',           $SEAFOOD, $kg),
+            $c('Tanigue',              'Spanish mackerel for kinilaw and grilling',                 $SEAFOOD, $kg),
+            $c('Tawilis',              'Freshwater sardinella for frying',                          $SEAFOOD, $kg),
 
-            // ── PORK ──────────────────────────────────────────────────────
+            // ── PROCESSED MEATS ──────────────────────────────────────────────
+            $c('Bacon',                    'Cured pork belly strips for breakfast',                 $PROC, $pack),
+            $c('Beef Burger Patties',      'Pre-formed beef burger patties for grilling',           $PROC, $pack),
+            $c('Beef Steak',               'Packaged marinated beef steak cuts',                    $PROC, $pack),
+            $c('Cheesedog',                'Cheese-filled hotdog sausage',                          $PROC, $pack),
+            $c('Chicken Franks',           'Chicken sausage franks for frying and grilling',        $PROC, $pack),
+            $c('Chicken Nuggets',          'Breaded chicken nuggets for frying',                    $PROC, $pack),
+            $c('Chicken Tocino',           'Sweet-cured chicken tocino for breakfast',              $PROC, $pack),
+            $c('Corned Beef',              'Packaged corned beef for quick meals',                  $PROC, $pack),
+            $c('Daing na Bangus (Packaged)', 'Packaged dried marinated milkfish',                    $PROC, $pack),
+            $c('Embotido',                 'Filipino-style rolled meatloaf',                        $PROC, $pack),
+            $c('Garlic Longganisa',        'Garlic-flavored pork sausage',                          $PROC, $pack),
+            $c('Garlic Sausage',           'Garlic-seasoned processed sausage',                     $PROC, $pack),
+            $c('Ham',                      'Cured ham for sandwiches and dishes',                   $PROC, $pack),
+            $c('Hotdog',                   'Pork and chicken hotdog sausage',                       $PROC, $pack),
+            $c('Hungarian Sausage',        'Smoked Hungarian-style sausage',                        $PROC, $pack),
+            $c('Longganisa',               'Sweet pork sausage for breakfast',                      $PROC, $pack),
+            $c('Meatballs',                'Pre-formed pork or beef meatballs',                     $PROC, $pack),
+            $c('Meatloaf',                 'Processed pork meatloaf',                               $PROC, $pack),
+            $c('Pork Tapa',                'Cured marinated pork slices for breakfast',             $PROC, $pack),
+            $c('Pork Tocino',              'Sweet-cured pork tocino for breakfast',                 $PROC, $pack),
+            $c('Siomai',                   'Frozen pork and shrimp dumplings',                      $PROC, $pack),
+            $c('Sweet Ham',                'Sweet-glazed processed ham',                            $PROC, $pack),
+            $c('Beef Tapa',                'Cured marinated beef slices for breakfast',             $PROC, $pack),
+            $c('Tinapa',                   'Smoked fish for side dishes and breakfast',             $PROC, $kg),
+            $c('Vienna Sausage',           'Packaged Vienna sausage links',                         $PROC, $pack),
+            $c('Sisig Sausage',            'Sisig-flavored processed sausage',                      $PROC, $pack),
 
-            ['name' => 'Bopis',                       'description' => 'Pork lungs and heart for bopis', 'category_id' => $cat('PORK', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Ground Pork',                 'description' => 'Ground pork',                   'category_id' => $cat('PORK', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Liempo',                      'description' => 'Pork belly (liempo)',            'category_id' => $cat('PORK', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Liempo Slice',                'description' => 'Sliced pork belly',             'category_id' => $cat('PORK', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Pork BBQ',                    'description' => 'Pork cuts for BBQ',             'category_id' => $cat('PORK', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Pork Chop',                   'description' => 'Pork chop cut',                 'category_id' => $cat('PORK', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Pork Liver',                  'description' => 'Pork liver',                    'category_id' => $cat('PORK', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Pork Gizzard (Balunbalunan)', 'description' => 'Pork gizzard',                  'category_id' => $cat('PORK', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Pork Maskara',                'description' => 'Pork face (maskara)',            'category_id' => $cat('PORK', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Pork Pata',                   'description' => 'Pork knuckle (pata)',            'category_id' => $cat('PORK', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Pork Pigue',                  'description' => 'Pork ham / hind leg',           'category_id' => $cat('PORK', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Spareribs',                   'description' => 'Pork spareribs',                'category_id' => $cat('PORK', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
+            // ── VEGETABLES ───────────────────────────────────────────────────
+            $c('Alugbati',                   'Malabar spinach for soups and sautéed dishes',       $VEG, $kg),
+            $c('Ampalaya',                   'Bitter gourd for pinakbet and stir-fry',              $VEG, $kg),
+            $c('Baguio Beans',               'Green beans from Baguio for salads and stir-fry',    $VEG, $kg),
+            $c('Baguio Lettuce',             'Fresh Baguio lettuce for salads',                     $VEG, $kg),
+            $c('Banana Blossom',             'Banana flower for kare-kare and soups',               $VEG, $kg),
+            $c('Bell Pepper (Red & Green)',  'Mixed bell peppers for stir-fry and garnish',         $VEG, $kg),
+            $c('Brocolli',                   'Fresh broccoli for stir-fry and salads',              $VEG, $kg),
+            $c('Cabbage',                    'Fresh cabbage for soups and stir-fry',                $VEG, $kg),
+            $c('Calamansi',                  'Philippine lime for seasoning and drinks',             $VEG, $kg),
+            $c('Carrots',                    'Fresh carrots for soups, salads, and stir-fry',       $VEG, $kg),
+            $c('Cauliflower',                'Fresh cauliflower for stir-fry and soups',            $VEG, $kg),
+            $c('Chili Finger Chili - Green', 'Green finger chili for spicy dishes',                 $VEG, $kg),
+            $c('Chili Labuyo - Red',         'Small red labuyo chili for spicy dishes',             $VEG, $kg),
+            $c('Cucumber',                   'Fresh cucumber for salads and garnish',               $VEG, $kg),
+            $c('Dahon ng Sili',              'Chili leaves for soups and local dishes',             $VEG, $kg),
+            $c('Eggplant',                   'Fresh eggplant for tortang talong and ensalada',      $VEG, $kg),
+            $c('Gabi Root',                  'Taro root for sinigang and laing',                    $VEG, $kg),
+            $c('Fresh Garlic',               'Fresh garlic bulbs for cooking and seasoning',        $VEG, $kg),
+            $c('Fresh Gata',                 'Fresh coconut milk for ginataan dishes',              $VEG, $kg),
+            $c('Ginger',                     'Fresh ginger root for cooking and seasoning',         $VEG, $kg),
+            $c('Green Peas',                 'Fresh or frozen green peas for soups and rice',       $VEG, $kg),
+            $c('Kamote',                     'Sweet potato for soups and desserts',                 $VEG, $kg),
+            $c('Kangkong',                   'Water spinach for adobo and sautéed dishes',          $VEG, $kg),
+            $c('Labanos',                    'White radish for sinigang and soups',                 $VEG, $kg),
+            $c('Labong',                     'Fresh bamboo shoots for sinigang and local dishes',   $VEG, $kg),
+            $c('Laing',                      'Dried taro leaves for laing dish',                    $VEG, $kg),
+            $c('Langka Gayat',               'Sliced jackfruit for kare-kare and local dishes',     $VEG, $kg),
+            $c('Lettuce',                    'Fresh romaine or iceberg lettuce for salads',         $VEG, $kg),
+            $c('Lumpia Wrapper',             'Thin pastry wrapper for lumpiang shanghai',           $VEG, $pcs),
+            $c('Malunggay',                  'Moringa leaves for soups and salads',                 $VEG, $kg),
+            $c('Mixed Vegies',               'Assorted mixed vegetables for soups and stir-fry',   $VEG, $kg),
+            $c('Monggo',                     'Mung beans for monggo guisado',                       $VEG, $kg),
+            $c('Okra',                       'Fresh okra for sinigang and pinakbet',                $VEG, $kg),
+            $c('Onion Leaves',               'Spring onion leaves for garnish and soups',           $VEG, $kg),
+            $c('Onion White',                'White onion for cooking and seasoning',               $VEG, $kg),
+            $c('Onion Red',                  'Red onion for kinilaw and raw dishes',                $VEG, $kg),
+            $c('Onion Leaks',                'Leeks for soups and stir-fry',                        $VEG, $kg),
+            $c('Papaya - Green',             'Unripe green papaya for tinola and achara',           $VEG, $kg),
+            $c('Patola',                     'Sponge gourd for soups and miso dishes',              $VEG, $kg),
+            $c('Pechay Chinese',             'Chinese cabbage for soups and stir-fry',              $VEG, $kg),
+            $c('Pechay Tagalog',             'Local pechay for soups and sautéed dishes',           $VEG, $kg),
+            $c('Potato',                     'Fresh potato for soups, frying, and stews',           $VEG, $kg),
+            $c('Kalabasa',                   'Squash for soups, ginataan, and pinakbet',            $VEG, $kg),
+            $c('Puso ng Saging Gayat',       'Sliced banana heart for kare-kare and soups',         $VEG, $kg),
+            $c('Saluyot',                    'Jute leaves for saluyot soup and local dishes',       $VEG, $kg),
+            $c('Saba',                       'Saba banana for cooking and desserts',                $VEG, $pcs),
+            $c('Sayote',                     'Chayote for soups and sautéed dishes',               $VEG, $kg),
+            $c('Sigarilyas',                 'Winged beans for stir-fry and salads',                $VEG, $kg),
+            $c('Singkamas',                  'Turnip for salads and kinilaw garnish',               $VEG, $kg),
+            $c('Sitaw',                      'String beans for adobo and sautéed dishes',           $VEG, $kg),
+            $c('Sitsaro',                    'Snow peas for stir-fry and soups',                    $VEG, $kg),
+            $c('Star Anise',                 'Whole star anise spice for stews and soups',          $VEG, $kg),
+            $c('Lemon Grass',                'Lemon grass stalks for soups and marinades',          $VEG, $kg),
+            $c('Togue',                      'Mung bean sprouts for soups and stir-fry',            $VEG, $kg),
+            $c('Tofu',                       'Fresh tofu block for sautéed dishes and soups',       $VEG, $pcs),
+            $c('Tomato',                     'Fresh tomatoes for sauces, salads, and soups',        $VEG, $kg),
+            $c('Upo',                        'Bottle gourd for soups and sautéed dishes',           $VEG, $kg),
+            $c('Yellow Corn',                'Fresh yellow corn for soups and grilling',            $VEG, $kg),
+            $c('Red Beans',                  'Dried red beans for soups and desserts',              $VEG, $kg),
+            $c('Young Corn',                 'Baby corn for stir-fry and soups',                    $VEG, $kg),
 
-            // ── CHICKEN ───────────────────────────────────────────────────
+            // ── FRESH FRUITS ─────────────────────────────────────────────────
+            $c('Apple',                    'Fresh apple for desserts and fruit salad',              $FRUITS, $pcs),
+            $c('Avocado',                  'Fresh avocado for salads and shakes',                   $FRUITS, $pcs),
+            $c('Banana - Lakatan Maniba',  'Unripe lakatan banana for cooking',                     $FRUITS, $kg),
+            $c('Banana - Lakatan Hinog',   'Ripe lakatan banana for desserts and snacks',           $FRUITS, $kg),
+            $c('Honeydew',                 'Honeydew melon for fruit salad and desserts',           $FRUITS, $pcs),
+            $c('Mango',                    'Fresh mango for desserts, shakes, and salads',          $FRUITS, $pcs),
+            $c('Melon',                    'Fresh melon for fruit salad and desserts',              $FRUITS, $pcs),
+            $c('Orange',                   'Fresh orange for juice and desserts',                   $FRUITS, $pcs),
+            $c('Pakwan',                   'Watermelon for desserts and refreshments',              $FRUITS, $pcs),
+            $c('Pineapple',                'Fresh pineapple for dishes, desserts, and drinks',      $FRUITS, $pcs),
+            $c('Ponkan',                   'Ponkan mandarin orange for snacks and desserts',        $FRUITS, $pcs),
 
-            ['name' => 'Chicken Breast',  'description' => 'Boneless chicken breast',   'category_id' => $cat('CHICKEN', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Chicken Gizzard', 'description' => 'Chicken gizzard',            'category_id' => $cat('CHICKEN', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Chicken Liver',   'description' => 'Chicken liver',              'category_id' => $cat('CHICKEN', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Chicken Thigh',   'description' => 'Chicken thigh cut',          'category_id' => $cat('CHICKEN', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Chicken Whole',   'description' => 'Whole dressed chicken',      'category_id' => $cat('CHICKEN', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Chicken Wings',   'description' => 'Chicken wings',              'category_id' => $cat('CHICKEN', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
+            // ── RICE ─────────────────────────────────────────────────────────
+            $c('Long Grain Rice',   'Long grain white rice for daily meals',                        $RICE, $sack),
+            $c('Japanese Rice',     'Short-grain Japanese rice for special dishes',                 $RICE, $kg),
+            $c('Malagkit',          'Glutinous rice for kakanin and desserts',                      $RICE, $kg),
 
-            // ── SEAFOOD ───────────────────────────────────────────────────
+            // ── EGGS ─────────────────────────────────────────────────────────
+            $c('White Eggs',   'White chicken eggs for cooking and baking',                         $EGGS, $tray),
+            $c('Salted Eggs',  'Cured salted eggs for salads and side dishes',                      $EGGS, $tray),
 
-            ['name' => 'Alumahan',          'description' => 'Indian mackerel',                  'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Bagoong Alamang',   'description' => 'Fermented shrimp paste',           'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Bisugo',            'description' => 'Threadfin bream',                  'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Daing na Bangus',   'description' => 'Dried marinated milkfish',         'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Daing na Galunggong', 'description' => 'Dried marinated round scad',    'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Dalagang Bukid',    'description' => 'Fusilier fish',                    'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Dry Dilis',         'description' => 'Dried anchovies',                  'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Fish Fillet',       'description' => 'Fish fillet (assorted)',            'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Galunggong',        'description' => 'Round scad',                       'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Hasa-hasa',         'description' => 'Short mackerel',                   'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Matangbaka',        'description' => 'Bigeye scad',                      'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Maya-maya',         'description' => 'Red snapper',                      'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Bangus Boneless',   'description' => 'Boneless milkfish (bangus)',        'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Mussels',           'description' => 'Fresh mussels (tahong)',            'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Okoy',              'description' => 'Shrimp (for okoy)',                 'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Pink Salmon Head',  'description' => 'Pink salmon head',                 'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Salmon Local',      'description' => 'Local salmon fish',                 'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Shrimp / Swahe',    'description' => 'Shrimp (swahe)',                   'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Squid',             'description' => 'Fresh squid (pusit)',               'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Tambakol',          'description' => 'Yellowfin tuna',                   'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Tilapia Whole',     'description' => 'Whole tilapia fish',                'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Tulingan',          'description' => 'Bullet tuna',                      'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Tuyo Salinas',      'description' => 'Dried salted sardines (tuyo)',     'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Tanigue',           'description' => 'Spanish mackerel',                 'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Tawilis',           'description' => 'Freshwater herring',               'category_id' => $cat('SEAFOOD', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
+            // ── CONDIMENTS ───────────────────────────────────────────────────
+            $c('Catsup',                   'Tomato ketchup for dipping and cooking',               $COND, $btl),
+            $c('Hot Sauce',                'Spicy hot sauce for dipping and seasoning',             $COND, $btl),
+            $c('Kikkoman Soy Sauce',       'Japanese soy sauce for marinades and dipping',          $COND, $btl),
+            $c('Knorr Seasoning',          'Liquid seasoning for cooking and marinating',           $COND, $btl),
+            $c('Mang Tomas Lechon Sauce',  'Sweet lechon liver sauce for dipping',                 $COND, $btl),
+            $c('Oyster Sauce',             'Oyster-based sauce for stir-fry and marinades',         $COND, $btl),
+            $c('Fish Sauce',               'Fermented fish sauce for seasoning Filipino dishes',    $COND, $btl),
+            $c('Soy Sauce',                'All-purpose soy sauce for cooking and marinating',      $COND, $btl),
+            $c('Tabasco',                  'Tabasco pepper sauce for seasoning and dipping',        $COND, $btl),
+            $c('Vinegar',                  'White cane vinegar for cooking and dipping',            $COND, $btl),
+            $c('Honey',                    'Natural honey for glazing and sweetening',              $COND, $btl),
 
-            // ── PROCESSED MEATS ───────────────────────────────────────────
+            // ── SEASONING ────────────────────────────────────────────────────
+            $c('Rock Salt',        'Coarse rock salt for cooking and preserving',                   $SEAS, $sack),
+            $c('Pepper',           'Ground black pepper for seasoning',                             $SEAS, $pack),
+            $c('Aromat',           'Nestlé Aromat all-purpose seasoning powder',                    $SEAS, $pack),
+            $c('Pork Broth',       'Pork broth base in tub for soups and stews',                   $SEAS, $tub),
+            $c('Chicken Broth',    'Chicken broth base in tub for soups and stews',                $SEAS, $tub),
+            $c('Beef Broth',       'Beef broth base in tub for soups and stews',                   $SEAS, $tub),
+            $c('Chicken Powder',   'Chicken flavor powder seasoning',                               $SEAS, $tub),
+            $c('Shrimp Powder',    'Shrimp flavor powder seasoning',                               $SEAS, $pack),
+            $c('Sinigang Mix',     'Tamarind-based sinigang soup mix sachet',                       $SEAS, $sachet),
 
-            ['name' => 'Bacon',                    'description' => 'Bacon strips',                         'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Beef Burger Patties',      'description' => 'Frozen beef burger patties',           'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Beef Steak',               'description' => 'Processed beef steak',                 'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Cheesedog',                'description' => 'Cheese-filled hotdog',                 'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Chicken Franks',           'description' => 'Chicken frankfurter sausages',         'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Chicken Nuggets',          'description' => 'Breaded chicken nuggets',              'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Chicken Tocino',           'description' => 'Cured sweet chicken (tocino)',          'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Corned Beef',              'description' => 'Canned corned beef',                   'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $can, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Daing na Bangus (Packed)', 'description' => 'Packaged / processed daing na bangus', 'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Embotido',                 'description' => 'Filipino meat loaf roll',              'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Garlic Longganisa',        'description' => 'Garlic-seasoned pork sausage',         'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Garlic Sausage',           'description' => 'Garlic-flavored sausage',              'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Ham',                      'description' => 'Cured ham',                            'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Hotdog',                   'description' => 'Hotdog sausages',                      'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Hungarian Sausage',        'description' => 'Hungarian-style pork sausage',         'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Longganisa',               'description' => 'Filipino pork sausage',                'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Meatballs',                'description' => 'Frozen pork or beef meatballs',        'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Meatloaf',                 'description' => 'Canned or frozen meatloaf',            'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Pork Tapa',                'description' => 'Cured pork tapa',                      'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Pork Tocino',              'description' => 'Cured sweet pork (tocino)',             'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Siomai',                   'description' => 'Pork or shrimp siomai dumplings',      'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Sweet Ham',                'description' => 'Sweet-cured ham',                      'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Beef Tapa',                'description' => 'Cured beef tapa',                      'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Tinapa',                   'description' => 'Smoked fish (tinapa)',                  'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Vienna Sausage',           'description' => 'Canned vienna sausage',                'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $can, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Sisig Sausage',            'description' => 'Sisig-flavored sausage',               'category_id' => $cat('PROCESSED MEATS', $god), 'unit_id' => $kg,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
+            // ── NOODLES & PASTA ──────────────────────────────────────────────
+            $c('Bihon',             'Rice vermicelli noodles for pancit bihon',                     $NOODLES, $kg),
+            $c('Canton',            'Egg noodles for pancit canton',                                $NOODLES, $kg),
+            $c('Macaroni Pasta',    'Dried elbow macaroni for sopas and pasta',                     $NOODLES, $kg),
+            $c('Miki (Fresh)',      'Fresh thick egg noodles for pancit miki',                      $NOODLES, $kg),
+            $c('Misua',             'Thin wheat noodles for misua soup',                            $NOODLES, $kg),
+            $c('Palabok Noodles',   'Thick rice noodles for pancit palabok',                       $NOODLES, $kg),
+            $c('Sotanghon',         'Glass noodles for pancit sotanghon',                           $NOODLES, $kg),
+            $c('Spaghetti Pasta',   'Dried spaghetti pasta for pasta dishes',                       $NOODLES, $kg),
 
-            // ── VEGETABLES ────────────────────────────────────────────────
+            // ── OIL ──────────────────────────────────────────────────────────
+            $c('Cooking Oil',   'Refined cooking oil in tin for frying and sautéing',               $OIL, $tin),
+            $c('Sesame Oil',    'Toasted sesame oil for flavoring Asian dishes',                    $OIL, $btl),
 
-            ['name' => 'Alugbati',                'description' => 'Alugbati (Malabar spinach)',     'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Ampalaya',                'description' => 'Bitter gourd (ampalaya)',        'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Baguio Beans',            'description' => 'Green beans (Baguio beans)',     'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Baguio Lettuce',          'description' => 'Lettuce (Baguio)',               'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Banana Blossom',          'description' => 'Banana blossom (puso ng saging)','category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Bell Pepper (Red & Green)', 'description' => 'Red and green bell peppers',  'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Brocolli',                'description' => 'Fresh broccoli',                'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Cabbage',                 'description' => 'Fresh cabbage',                 'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Calamansi',               'description' => 'Calamansi (Philippine lime)',   'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Carrots',                 'description' => 'Fresh carrots',                 'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Cauliflower',             'description' => 'Fresh cauliflower',             'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Chili Finger (Green)',    'description' => 'Green finger chili',            'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Chili Labuyo (Red)',      'description' => 'Red labuyo chili',              'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Cucumber',                'description' => 'Fresh cucumber',                'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Dahon ng Sili',           'description' => 'Chili leaves',                 'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Eggplant',                'description' => 'Fresh eggplant (talong)',       'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Gabi Root',               'description' => 'Taro root (gabi)',              'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Fresh Garlic',            'description' => 'Fresh garlic bulbs',            'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Fresh Gata',              'description' => 'Fresh coconut milk (gata)',     'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $L,    'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Ginger',                  'description' => 'Fresh ginger root (luya)',      'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Green Peas',              'description' => 'Fresh or frozen green peas',    'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Kamote',                  'description' => 'Sweet potato (kamote)',          'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Kangkong',                'description' => 'Water spinach (kangkong)',       'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Labanos',                 'description' => 'White radish (labanos)',         'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Labong',                  'description' => 'Bamboo shoots (labong)',         'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Laing',                   'description' => 'Dried taro leaves (laing)',     'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Langka Gayat',            'description' => 'Sliced young jackfruit',        'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Lettuce',                 'description' => 'Fresh lettuce',                 'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Lumpia Wrapper',          'description' => 'Spring roll wrappers',          'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $pack, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Malunggay',               'description' => 'Moringa leaves (malunggay)',    'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Mixed Vegies',            'description' => 'Mixed vegetables (assorted)',   'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Monggo',                  'description' => 'Mung beans (monggo)',            'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Okra',                    'description' => 'Fresh okra',                    'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Onion Leaves',            'description' => 'Spring onion / green onion',   'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Onion White',             'description' => 'White onion',                  'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Onion Red',               'description' => 'Red onion',                    'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Onion Leaks',             'description' => 'Leeks (onion leeks)',           'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Papaya - Green',          'description' => 'Green / unripe papaya',        'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Patola',                  'description' => 'Sponge gourd (patola)',         'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Pechay Chinese',          'description' => 'Chinese pechay (bok choy)',     'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Pechay Tagalog',          'description' => 'Tagalog pechay (mustard green)','category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Potato',                  'description' => 'Fresh potato',                 'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Kalabasa',                'description' => 'Squash (kalabasa)',             'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Puso ng Saging Gayat',    'description' => 'Sliced banana blossom',        'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Saluyot',                 'description' => 'Jute leaves (saluyot)',         'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Saba',                    'description' => 'Saba banana (cooking banana)',  'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Sayote',                  'description' => 'Chayote (sayote)',              'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Sigarilyas',              'description' => 'Winged beans (sigarilyas)',     'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Singkamas',               'description' => 'Turnip (singkamas)',            'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Sitaw',                   'description' => 'String beans (sitaw)',          'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Sitsaro',                 'description' => 'Snow peas (sitsaro)',           'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Star Anise',              'description' => 'Star anise spice',              'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Lemon Grass',             'description' => 'Lemon grass (tanglad)',         'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Togue',                   'description' => 'Bean sprouts (togue)',          'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Tofu',                    'description' => 'Fresh tofu (tokwa/taho)',       'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Tomato',                  'description' => 'Fresh tomato',                 'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Upo',                     'description' => 'Bottle gourd (upo)',            'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Yellow Corn',             'description' => 'Fresh yellow corn (mais)',      'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Red Beans',               'description' => 'Dried red beans',              'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Young Corn',              'description' => 'Baby corn (young corn)',        'category_id' => $cat('VEGETABLES', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
+            // ── SUGAR / OTHERS ───────────────────────────────────────────────
+            $c('Cornstarch',        'Cornstarch for thickening sauces and gravies',                 $SUGAR, $sack),
+            $c('Sugar, Brown',      'Brown sugar for cooking and baking',                           $SUGAR, $sack),
+            $c('Sugar, White',      'Refined white sugar for cooking, baking, and drinks',          $SUGAR, $sack),
+            $c('All Purpose Flour', 'All-purpose wheat flour for baking and coating',               $SUGAR, $sack),
 
-            // ── FRESH FRUITS ──────────────────────────────────────────────
+            // ── CANNED GOODS ─────────────────────────────────────────────────
+            $c('Button Mushroom',        'Canned sliced button mushrooms for soups and pasta',     $CANNED, $can),
+            $c('Cream of Corn',          'Creamed corn for soups and side dishes',                 $CANNED, $kg),
+            $c('Garbanzos',              'Canned chickpeas for cocido and salads',                 $CANNED, $can),
+            $c('Coconut Milk in Can',    'Canned coconut milk for ginataan and curries',           $CANNED, $can),
+            $c('Luncheon Meat',          'Canned luncheon meat for quick meals',                   $CANNED, $can),
+            $c('Pork & Beans',           'Canned pork and beans for quick meals',                  $CANNED, $can),
+            $c('Sardines in Tomato Sauce', 'Canned sardines in tomato sauce',                       $CANNED, $can),
+            $c('Whole Kernel Corn',      'Canned whole kernel corn for soups and salads',          $CANNED, $can),
 
-            ['name' => 'Apple',                 'description' => 'Fresh apple',                    'category_id' => $cat('FRESH FRUITS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Avocado',               'description' => 'Fresh avocado',                  'category_id' => $cat('FRESH FRUITS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Banana - Lakatan Hilaw', 'description' => 'Unripe lakatan banana',         'category_id' => $cat('FRESH FRUITS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Banana - Lakatan Hinog', 'description' => 'Ripe lakatan banana',           'category_id' => $cat('FRESH FRUITS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Honeydew',              'description' => 'Honeydew melon',                 'category_id' => $cat('FRESH FRUITS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Mango',                 'description' => 'Fresh mango',                    'category_id' => $cat('FRESH FRUITS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Melon',                 'description' => 'Fresh melon',                    'category_id' => $cat('FRESH FRUITS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Orange',                'description' => 'Fresh orange',                   'category_id' => $cat('FRESH FRUITS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Pakwan',                'description' => 'Watermelon (pakwan)',             'category_id' => $cat('FRESH FRUITS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Pineapple',             'description' => 'Fresh pineapple',                'category_id' => $cat('FRESH FRUITS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Ponkan',                'description' => 'Ponkan citrus fruit',            'category_id' => $cat('FRESH FRUITS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
+            // ── SUPPLIES ─────────────────────────────────────────────────────
+            $c('Aluminum Foil',  'Heavy-duty aluminum foil for wrapping and baking',               $SUPPLIES, $roll),
+            $c('Cling Wrap',     'Plastic cling wrap for covering and storing food',               $SUPPLIES, $roll),
+            $c('Handgloves',     'Disposable food-safe gloves for food handling',                  $SUPPLIES, $pack),
 
-            // ── RICE ──────────────────────────────────────────────────────
+            // ── OTHERS ───────────────────────────────────────────────────────
+            $c('Cream of Pumpkin',       'Pumpkin cream soup base packet',                         $OTHERS, $packet),
+            $c('Cream of Mushroom',      'Cream of mushroom soup base',                            $OTHERS, $kg),
+            $c('Curry Powder',           'Blended curry spice powder for curries',                 $OTHERS, $packet),
+            $c('Demiglace Sauce',        'Rich demi-glace sauce base for gravies',                 $OTHERS, $kg),
+            $c('Bread Crumbs',           'Seasoned breadcrumbs for coating and toppings',          $OTHERS, $pack),
+            $c('Atsuete',                'Annatto seeds or powder for coloring dishes',            $OTHERS, $pack),
+            $c('Mushroom Shiitake',      'Dried shiitake mushrooms for soups and stir-fry',        $OTHERS, $pack),
+            $c('Peanut Butter',          'Peanut butter in tub for kare-kare and spreads',         $OTHERS, $tub),
+            $c('Pineapple Tidbits',      'Canned pineapple tidbits for sweet and sour dishes',     $OTHERS, $can),
+            $c('Spanish Paprika',        'Smoked Spanish paprika powder for seasoning',            $OTHERS, $pack),
+            $c('Tomato Paste',           'Concentrated tomato paste packet for sauces',            $OTHERS, $packet),
+            $c('Tomato Sauce',           'Bottled tomato sauce for pasta and stews',               $OTHERS, $pcs),
+            $c('Pineapple Chunks',       'Canned pineapple chunks for desserts and dishes',        $OTHERS, $can),
+            $c('Pickle (Whole)',         'Whole pickled cucumbers in bottle',                      $OTHERS, $btl),
+            $c('Pickle (Relish)',        'Sweet pickle relish in bottle',                          $OTHERS, $btl),
+            $c('Salted Black Beans',     'Canned salted black beans for sauces and stir-fry',     $OTHERS, $can),
+            $c('Onion Powder',           'Dehydrated onion powder for seasoning',                  $OTHERS, $pack),
+            $c('Liver Spread',           'Canned liver spread for sandwiches and dishes',          $OTHERS, $can),
+            $c('BBQ Marinade',           'Bottled BBQ marinade sauce for grilling',                $OTHERS, $btl),
+            $c('Basil Leaves',           'Dried basil leaves in canister for Italian dishes',      $OTHERS, $canister),
+            $c('Mayonnaise',             'Mayonnaise in tub for salads and sandwiches',            $OTHERS, $tub),
+            $c('Crab and Corn',          'Crab and corn soup base packet',                         $OTHERS, $packet),
+            $c('Cheese Sauce Mix',       'Cheese sauce powder mix packet',                         $OTHERS, $packet),
+            $c('Garlic Powder',          'Dehydrated garlic powder for seasoning',                 $OTHERS, $kg),
+            $c('Fried Garlic Granules',  'Crispy fried garlic granules for toppings',              $OTHERS, $kg),
+            $c('Whole Red Parmiento',    'Canned whole red pimiento peppers',                      $OTHERS, $can),
+            $c('Charcoal',               'Charcoal in sack for grilling and BBQ',                  $OTHERS, $sack),
+            $c('Century Tuna Chunks',    'Canned tuna chunks in oil or water',                     $OTHERS, $can),
+            $c('Fried Garlic',           'Crispy fried garlic packet for toppings',                $OTHERS, $packet),
+            $c('Hoisin Sauce',           'Sweet Chinese hoisin sauce in case',                     $OTHERS, $cs),
+            $c('Sweet Chili Sauce',      'Sweet chili dipping sauce in case',                      $OTHERS, $cs),
+            $c('Lard',                   'Rendered pork lard in tub for cooking',                  $OTHERS, $tub),
+            $c('Margarine',              'Margarine in tub for cooking and baking',                $OTHERS, $tub),
+            $c('Rosemary',               'Dried rosemary herb in canister',                        $OTHERS, $canister),
+            $c('Cayenne Powder',         'Cayenne chili powder in tub for seasoning',              $OTHERS, $tub),
+            $c('Bamboo Shoot',           'Canned bamboo shoots for soups and stir-fry',            $OTHERS, $can),
+            $c('Straw Mushroom',         'Canned straw mushrooms for soups and stir-fry',          $OTHERS, $can),
+            $c('Whole Mushroom',         'Canned whole mushrooms in case',                         $OTHERS, $cs),
 
-            ['name' => 'Long Grain Rice', 'description' => 'Long grain white rice, 50kg sack', 'category_id' => $cat('RICE', $god), 'unit_id' => $sack, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Japanese Rice',   'description' => 'Short grain Japanese rice',         'category_id' => $cat('RICE', $god), 'unit_id' => $sack, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Malagkit',        'description' => 'Glutinous / sticky rice (malagkit)','category_id' => $cat('RICE', $god), 'unit_id' => $sack, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
+            // ── CLEANING MATERIALS ───────────────────────────────────────────
+            $c('All Purpose Cleaner',          'Multi-surface all-purpose cleaner in carboy',       $CLEANING, $cby),
+            $c('Chlorine Bleach & Sanitizer',  'Chlorine-based bleach and sanitizer in carboy',    $CLEANING, $cby),
+            $c('Compact Tissue (16packs/box)',  'Compact tissue paper, 16 packs per box',           $CLEANING, $pack),
+            $c('Dishwashing Liquid',           'Dishwashing liquid concentrate in carboy',          $CLEANING, $cby),
+            $c('Fire Gel',                     'Fire-starting gel in tub for cooking ignition',    $CLEANING, $tub),
+            $c('Floor Squeegee',               'Floor water squeegee for wet floor cleaning',      $CLEANING, $pcs),
+            $c('Floor Squeegee Handle',        'Replacement handle for floor squeegee',            $CLEANING, $pcs),
+            $c('Garbage Bag (Black) Med.',     'Black medium garbage bag in bundle',               $CLEANING, $bundle),
+            $c('Garbage Bag (Black) XXL',      'Black extra-large garbage bag in bundle',          $CLEANING, $bundle),
+            $c('Hand Soap',                    'Liquid hand soap in carboy for hygiene',           $CLEANING, $cby),
+            $c('Mop Bucket Squeezer',          'Mop bucket with squeezer mechanism',               $CLEANING, $pcs),
+            $c('Mop Head',                     'Replacement cotton mop head',                      $CLEANING, $pcs),
+            $c('Mop Handle',                   'Mop stick handle for floor cleaning',              $CLEANING, $pcs),
+            $c('Pop-up Tissue (60pcs/box)',     'Pop-up facial tissue, 60 pcs per box',            $CLEANING, $pcs),
+            $c('Pot Holder',                   'Heat-resistant pot holder for kitchen use',        $CLEANING, $pcs),
+            $c('Push Brush',                   'Heavy-duty push brush for floor scrubbing',        $CLEANING, $pcs),
+            $c('Round Rugs White',             'White round floor rug for kitchen areas',          $CLEANING, $pcs),
+            $c('Rubber Gloves',                'Chemical-resistant rubber gloves for cleaning',    $CLEANING, $pcs),
+            $c('Scotch Brite 3M',              '3M Scotch-Brite scrubbing pad',                    $CLEANING, $pcs),
+            $c('Scour Pad w/Foam',             'Dual-sided scouring pad with foam for dishwashing', $CLEANING, $pcs),
+            $c('Soft Broom',                   'Soft-bristle broom for indoor sweeping',           $CLEANING, $pcs),
+            $c('Spray Bottle',                 'Empty spray bottle for cleaning solutions',         $CLEANING, $pcs),
+            $c('Squeegee w/Foam',              'Window squeegee with foam applicator',             $CLEANING, $pcs),
+            $c('Stick Broom',                  'Stick broom for sweeping floors',                  $CLEANING, $pcs),
 
-            // ── EGGS ──────────────────────────────────────────────────────
-
-            ['name' => 'White Eggs',   'description' => 'White chicken eggs',  'category_id' => $cat('EGGS', $god), 'unit_id' => $pcs, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 30, 'department_id' => $dept($god)],
-            ['name' => 'Salted Eggs',  'description' => 'Salted duck/chicken eggs', 'category_id' => $cat('EGGS', $god), 'unit_id' => $pcs, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-
-            // ── CONDIMENTS ────────────────────────────────────────────────
-
-            ['name' => 'Catsup',                    'description' => 'Tomato ketchup',                    'category_id' => $cat('CONDIMENTS', $god), 'unit_id' => $btl, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Hot Sauce',                 'description' => 'Hot sauce',                         'category_id' => $cat('CONDIMENTS', $god), 'unit_id' => $btl, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Kikkoman Soy Sauce',        'description' => 'Kikkoman Japanese soy sauce',       'category_id' => $cat('CONDIMENTS', $god), 'unit_id' => $btl, 'item_type' => 'consumable', 'brand' => 'Kikkoman', 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Knorr Seasoning',           'description' => 'Knorr liquid seasoning',            'category_id' => $cat('CONDIMENTS', $god), 'unit_id' => $btl, 'item_type' => 'consumable', 'brand' => 'Knorr', 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Mang Tomas Lechon Sauce',   'description' => 'Mang Tomas all-purpose sauce',      'category_id' => $cat('CONDIMENTS', $god), 'unit_id' => $btl, 'item_type' => 'consumable', 'brand' => 'Mang Tomas', 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Oyster Sauce',              'description' => 'Oyster sauce',                      'category_id' => $cat('CONDIMENTS', $god), 'unit_id' => $btl, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Fish Sauce',                'description' => 'Fish sauce (patis)',                 'category_id' => $cat('CONDIMENTS', $god), 'unit_id' => $btl, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Soy Sauce',                 'description' => 'Soy sauce (toyo)',                   'category_id' => $cat('CONDIMENTS', $god), 'unit_id' => $btl, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Tabasco',                   'description' => 'Tabasco hot pepper sauce',           'category_id' => $cat('CONDIMENTS', $god), 'unit_id' => $btl, 'item_type' => 'consumable', 'brand' => 'Tabasco', 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Vinegar',                   'description' => 'White cane vinegar (suka)',          'category_id' => $cat('CONDIMENTS', $god), 'unit_id' => $btl, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Honey',                     'description' => 'Natural honey',                     'category_id' => $cat('CONDIMENTS', $god), 'unit_id' => $btl, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-
-            // ── SEASONING ─────────────────────────────────────────────────
-
-            ['name' => 'Rock Salt',       'description' => 'Rock salt',                          'category_id' => $cat('SEASONING', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Pepper',          'description' => 'Ground black pepper',                'category_id' => $cat('SEASONING', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Aromat',          'description' => 'Aromat all-purpose seasoning',       'category_id' => $cat('SEASONING', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => 'Aromat', 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Pork Broth',      'description' => 'Pork broth cubes / powder',          'category_id' => $cat('SEASONING', $god), 'unit_id' => $pack, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Chicken Broth',   'description' => 'Chicken broth cubes / powder',       'category_id' => $cat('SEASONING', $god), 'unit_id' => $pack, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Beef Broth',      'description' => 'Beef broth cubes / powder',          'category_id' => $cat('SEASONING', $god), 'unit_id' => $pack, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Chicken Powder',  'description' => 'Chicken seasoning powder',           'category_id' => $cat('SEASONING', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Shrimp Powder',   'description' => 'Shrimp seasoning powder',            'category_id' => $cat('SEASONING', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Sinigang Mix',    'description' => 'Sinigang soup base mix',             'category_id' => $cat('SEASONING', $god), 'unit_id' => $pack, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-
-            // ── NOODLES & PASTA ───────────────────────────────────────────
-
-            ['name' => 'Bihon',           'description' => 'Rice vermicelli (bihon)',            'category_id' => $cat('NOODLES & PASTA', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Canton',          'description' => 'Egg noodles (canton)',               'category_id' => $cat('NOODLES & PASTA', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Macaroni Pasta',  'description' => 'Elbow macaroni pasta',              'category_id' => $cat('NOODLES & PASTA', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Miki (Fresh)',    'description' => 'Fresh miki noodles',                'category_id' => $cat('NOODLES & PASTA', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Misua',           'description' => 'Thin wheat vermicelli (misua)',     'category_id' => $cat('NOODLES & PASTA', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Palabok Noodles', 'description' => 'Rice noodles for palabok',         'category_id' => $cat('NOODLES & PASTA', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Sotanghon',       'description' => 'Glass noodles (sotanghon)',         'category_id' => $cat('NOODLES & PASTA', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Spaghetti Pasta', 'description' => 'Spaghetti pasta',                  'category_id' => $cat('NOODLES & PASTA', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-
-            // ── OIL ───────────────────────────────────────────────────────
-
-            ['name' => 'Cooking Oil', 'description' => 'Refined cooking oil (palm / canola)', 'category_id' => $cat('OIL', $god), 'unit_id' => $L, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Sesame Oil',  'description' => 'Sesame oil for cooking and flavoring', 'category_id' => $cat('OIL', $god), 'unit_id' => $L, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-
-            // ── SUGAR / OTHERS ────────────────────────────────────────────
-
-            ['name' => 'Cornstarch',       'description' => 'Cornstarch powder',            'category_id' => $cat('SUGAR / OTHERS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Sugar, Brown',     'description' => 'Brown sugar',                  'category_id' => $cat('SUGAR / OTHERS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Sugar, White',     'description' => 'White refined sugar',          'category_id' => $cat('SUGAR / OTHERS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'All Purpose Flour', 'description' => 'All-purpose wheat flour',    'category_id' => $cat('SUGAR / OTHERS', $god), 'unit_id' => $kg, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-
-            // ── CANNED GOODS ──────────────────────────────────────────────
-
-            ['name' => 'Button Mushroom',            'description' => 'Canned button mushroom',           'category_id' => $cat('CANNED GOODS', $god), 'unit_id' => $can, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Cream of Corn',              'description' => 'Canned cream-style corn',          'category_id' => $cat('CANNED GOODS', $god), 'unit_id' => $can, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Garbanzos',                  'description' => 'Canned chickpeas (garbanzos)',     'category_id' => $cat('CANNED GOODS', $god), 'unit_id' => $can, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Coconut Milk in Can',        'description' => 'Canned coconut milk (gata)',       'category_id' => $cat('CANNED GOODS', $god), 'unit_id' => $can, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Luncheon Meat',              'description' => 'Canned luncheon meat',             'category_id' => $cat('CANNED GOODS', $god), 'unit_id' => $can, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Pork & Beans',               'description' => 'Canned pork and beans',           'category_id' => $cat('CANNED GOODS', $god), 'unit_id' => $can, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Sardines in Tomato Sauce',   'description' => 'Canned sardines in tomato sauce', 'category_id' => $cat('CANNED GOODS', $god), 'unit_id' => $can, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 12, 'department_id' => $dept($god)],
-            ['name' => 'Whole Kernel Corn',          'description' => 'Canned whole kernel corn',        'category_id' => $cat('CANNED GOODS', $god), 'unit_id' => $can, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-
-            // ── SUPPLIES ──────────────────────────────────────────────────
-
-            ['name' => 'Aluminum Foil', 'description' => 'Heavy-duty aluminum foil roll',      'category_id' => $cat('SUPPLIES', $god), 'unit_id' => $roll, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Cling Wrap',    'description' => 'Plastic cling wrap roll',             'category_id' => $cat('SUPPLIES', $god), 'unit_id' => $roll, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Handgloves',    'description' => 'Disposable food-handling gloves',    'category_id' => $cat('SUPPLIES', $god), 'unit_id' => $box,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-
-            // ── OTHERS ────────────────────────────────────────────────────
-
-            ['name' => 'Cream of Pumpkin',       'description' => 'Canned cream of pumpkin soup',       'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Cream of Mushroom',      'description' => 'Canned cream of mushroom soup',      'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Curry Powder',           'description' => 'Curry powder spice mix',             'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Demiglace Sauce',        'description' => 'Demi-glace sauce (powder or paste)', 'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Bread Crumbs',           'description' => 'Bread crumbs for coating',          'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Atsuete',                'description' => 'Annatto seeds / powder (atsuete)',  'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Mushroom Shiitake',      'description' => 'Dried shiitake mushrooms',          'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Peanut Butter',          'description' => 'Peanut butter (creamy or crunchy)', 'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Pineapple Tidbits',      'description' => 'Canned pineapple tidbits',          'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Spanish Paprika',        'description' => 'Spanish paprika powder',            'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Tomato Paste',           'description' => 'Canned tomato paste',               'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Tomato Sauce',           'description' => 'Canned tomato sauce',               'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Pineapple Chunks',       'description' => 'Canned pineapple chunks',           'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Pickle (Whole)',         'description' => 'Whole pickles in brine',            'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Pickle (Relish)',        'description' => 'Pickle relish',                     'category_id' => $cat('OTHERS', $god), 'unit_id' => $btl,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Salted Black Beans',     'description' => 'Canned salted black beans (tausi)', 'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Onion Powder',           'description' => 'Dehydrated onion powder',          'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Liver Spread',           'description' => 'Canned liver spread',              'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'BBQ Marinade',           'description' => 'BBQ marinade sauce',               'category_id' => $cat('OTHERS', $god), 'unit_id' => $btl,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Basil Leaves',           'description' => 'Dried or fresh basil leaves',     'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Mayonnaise',             'description' => 'Mayonnaise (spread)',              'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Crab and Corn',          'description' => 'Canned crab and corn soup',        'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Cheese Sauce Mix',       'description' => 'Powdered cheese sauce mix',        'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Garlic Powder',          'description' => 'Dehydrated garlic powder',        'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Fried Garlic Granules',  'description' => 'Crispy fried garlic granules',   'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Whole Red Parmiento',    'description' => 'Canned whole red pimiento',       'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Charcoal',               'description' => 'Cooking charcoal (uling)',        'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Century Tuna Chunks',    'description' => 'Canned tuna chunks in oil/brine', 'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => 'Century', 'model' => null, 'specifications' => null, 'min_stock_level' => 10, 'department_id' => $dept($god)],
-            ['name' => 'Fried Garlic',           'description' => 'Pre-fried garlic topping',        'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Hoisin Sauce',           'description' => 'Chinese hoisin sauce',            'category_id' => $cat('OTHERS', $god), 'unit_id' => $btl,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Sweet Chili Sauce',      'description' => 'Sweet chili dipping sauce',       'category_id' => $cat('OTHERS', $god), 'unit_id' => $btl,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Lard',                   'description' => 'Pork lard (mantika)',             'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3,  'department_id' => $dept($god)],
-            ['name' => 'Margarine',              'description' => 'Margarine (butter substitute)',   'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2,  'department_id' => $dept($god)],
-            ['name' => 'Rosemary',               'description' => 'Dried rosemary herb',            'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Cayenne Powder',         'description' => 'Cayenne chili powder',           'category_id' => $cat('OTHERS', $god), 'unit_id' => $kg,   'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1,  'department_id' => $dept($god)],
-            ['name' => 'Bamboo Shoot',           'description' => 'Canned bamboo shoots (labong)',  'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Straw Mushroom',         'description' => 'Canned straw mushrooms',         'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-            ['name' => 'Whole Mushroom',         'description' => 'Canned whole mushrooms',         'category_id' => $cat('OTHERS', $god), 'unit_id' => $can,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5,  'department_id' => $dept($god)],
-
-            // ── CLEANING MATERIALS ────────────────────────────────────────
-
-            ['name' => 'All Purpose Cleaner',          'description' => 'All-purpose cleaning solution',         'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $btl,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Chlorine Bleach & Sanitizer',  'description' => 'Chlorine bleach and sanitizer solution','category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $btl,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Compact Tissue (16packs/box)', 'description' => 'Compact tissue box (16 packs)',         'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $box,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Dishwashing Liquid',           'description' => 'Dishwashing liquid detergent',          'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $btl,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Fire Gel',                     'description' => 'Gel fire starter',                      'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Floor Squeegee',               'description' => 'Floor squeegee (rubber blade)',         'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Floor Squeegee Handle',        'description' => 'Replacement handle for floor squeegee', 'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Garbage Bag (Black) Med.',     'description' => 'Black medium garbage bags (pack)',      'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pack, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Garbage Bag (Black) XXL',      'description' => 'Black extra-large garbage bags (pack)', 'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pack, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Hand Soap',                    'description' => 'Liquid hand soap',                      'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $btl,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Mop Bucket Squeezer',          'description' => 'Mop bucket with squeezer wringer',      'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 1, 'department_id' => $dept($god)],
-            ['name' => 'Mop Head',                     'description' => 'Replacement mop head',                  'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Mop Handle',                   'description' => 'Mop handle stick',                      'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Pop-up Tissue (60pcs/box)',    'description' => 'Pop-up facial tissue box (60 pcs)',     'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $box,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Pot Holder',                   'description' => 'Heat-resistant pot holder / oven mitt', 'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Push Brush',                   'description' => 'Push/deck scrub brush',                 'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Round Rugs White',             'description' => 'White round floor rugs',                'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Rubber Gloves',                'description' => 'Heavy-duty rubber cleaning gloves',     'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pair, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Scotch Brite 3M',              'description' => '3M Scotch-Brite scrubbing pad',         'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => '3M', 'model' => 'Scotch-Brite', 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Scour Pad w/Foam',             'description' => 'Scouring pad with foam sponge',         'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 5, 'department_id' => $dept($god)],
-            ['name' => 'Soft Broom',                   'description' => 'Soft-bristle floor broom (walis tambo)', 'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Spray Bottle',                 'description' => 'Empty spray bottle for cleaning solutions', 'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 3, 'department_id' => $dept($god)],
-            ['name' => 'Squeegee w/Foam',              'description' => 'Squeegee with foam sponge attachment',  'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-            ['name' => 'Stick Broom',                  'description' => 'Stiff-bristle stick broom (walis ting-ting)', 'category_id' => $cat('CLEANING MATERIALS', $god), 'unit_id' => $pcs,  'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 2, 'department_id' => $dept($god)],
-
-            // ── BOTTLED WATER ─────────────────────────────────────────────
-
-            ['name' => 'Bottled Water', 'description' => 'Purified bottled drinking water', 'category_id' => $cat('BOTTLED WATER', $god), 'unit_id' => $btl, 'item_type' => 'consumable', 'brand' => null, 'model' => null, 'specifications' => null, 'min_stock_level' => 20, 'department_id' => $dept($god)],
-
+            // ── BOTTLED WATER ────────────────────────────────────────────────
+            $c('Bottled Water', 'Purified drinking water in bottle',                                $WATER, $btl),
         ];
 
-        foreach ($items as $itemData) {
-            if ($itemData['category_id'] && $itemData['department_id']) {
-                Item::firstOrCreate(
-                    ['name' => $itemData['name'], 'department_id' => $itemData['department_id']],
-                    $itemData
-                );
-            }
+        foreach ($items as $row) {
+            Item::firstOrCreate(
+                ['name' => $row['name'], 'department_id' => $row['department_id']],
+                $row
+            );
         }
     }
 }

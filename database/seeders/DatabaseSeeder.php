@@ -22,9 +22,8 @@ class DatabaseSeeder extends Seeder
             ItemSeeder::class,             // 6. Item definitions (fixed_asset & consumable)
             EmployeeSeeder::class,         // 7. Employees (requires departments)
             ItemAssetSeeder::class,        // 8. Individual fixed-asset units + initial assignments
-            InventoryStockSeeder::class,   // 9. Consumable stocks + stock receival records
+            InventoryStockSeeder::class,   // 9. Consumable stocks (no receival/issuance records)
             DepartmentUserSeeder::class,   // 10. One user account per department
-            StockIssuanceSeeder::class,    // 11. Sample stock issuances (decrements stock)
         ]);
     }
 }

@@ -45,7 +45,7 @@ class StockReceivalController extends Controller
         }
 
         return $this->success(
-            $query->orderByDesc('received_at')->get()
+            $query->orderByDesc('created_at')->get()
         );
     }
 

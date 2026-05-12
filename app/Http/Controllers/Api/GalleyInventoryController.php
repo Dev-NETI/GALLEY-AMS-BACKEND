@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Department;
 use App\Models\GalleyInventoryRemark;
 use App\Models\InventoryStock;
@@ -214,11 +215,14 @@ class GalleyInventoryController extends Controller
             abort(422, 'Could not resolve department. Pass department_id or ensure the GOD department exists.');
         }
 
-        // Build item query (same category filters as index)
+        // Build item query sorted by category name then item name
         $itemQuery = Item::with(['unit', 'category'])
-            ->where('department_id', $deptId)
-            ->where('item_type', 'consumable')
-            ->orderBy('name');
+            ->join('categories', 'items.category_id', '=', 'categories.id')
+            ->select('items.*', 'categories.name as category_name')
+            ->where('items.department_id', $deptId)
+            ->where('items.item_type', 'consumable')
+            ->orderBy('categories.name')
+            ->orderBy('items.name');
 
         if ($request->filled('only_category')) {
             $itemQuery->whereHas('category', fn ($q) =>
@@ -236,13 +240,32 @@ class GalleyInventoryController extends Controller
         $items     = $itemQuery->get();
         $suppliers = Supplier::orderBy('name')->pluck('name')->toArray();
 
-        // Columns: Item Name (pre-filled/locked), Quantity, Supplier, Date Received, Notes
         $headers = ['Item Name', 'Quantity', 'Supplier', 'Date Received', 'Notes'];
 
-        // Pre-fill one row per item; user fills the other columns
-        $sampleRows = $items->map(fn ($item) => [
-            $item->name, null, null, date('Y-m-d'), null,
-        ])->toArray();
+        // Build rows grouped by category, inserting a styled header row before each group
+        $sampleRows              = [];
+        $categoryHeaderExcelRows = [];
+        $itemNameExcelRows       = [];
+        $currentCat              = null;
+        $excelRow                = 2; // row 1 is the column header
+
+        foreach ($items as $item) {
+            $catName = $item->category_name ?? 'UNCATEGORIZED';
+
+            if ($catName !== $currentCat) {
+                $sampleRows[]              = [$catName, null, null, null, null];
+                $categoryHeaderExcelRows[] = $excelRow;
+                $currentCat                = $catName;
+                $excelRow++;
+            }
+
+            $sampleRows[]        = [$item->name, null, null, date('Y-m-d'), null];
+            $itemNameExcelRows[] = $excelRow;
+            $excelRow++;
+        }
+
+        $lastRow   = $excelRow - 1;
+        $bufferRow = max($lastRow, 1000);
 
         $spreadsheet = $this->createTemplateSpreadsheet(
             $headers,
@@ -256,23 +279,34 @@ class GalleyInventoryController extends Controller
         );
 
         $dataSheet = $spreadsheet->getActiveSheet();
-        $lastRow   = count($items) + 1; // +1 for header row
 
-        if ($lastRow > 1) {
-            // Style item name column: grey background to signal it is pre-filled
-            $dataSheet->getStyle("A2:A{$lastRow}")->applyFromArray([
+        // Style category header rows (dark background, white bold text)
+        foreach ($categoryHeaderExcelRows as $rowNum) {
+            $dataSheet->getStyle("A{$rowNum}:E{$rowNum}")->applyFromArray([
                 'fill' => [
                     'fillType'   => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => 'E2E8F0'],
+                    'startColor' => ['rgb' => '1E3A5F'],
                 ],
-                'font' => ['bold' => true, 'color' => ['rgb' => '1E293B']],
+                'font'      => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT],
             ]);
+            $dataSheet->getRowDimension($rowNum)->setRowHeight(18);
+        }
 
-            // Sheet protection: lock item name column, unlock everything else
+        // Style item name cells (grey background, locked)
+        if (! empty($itemNameExcelRows)) {
+            foreach ($itemNameExcelRows as $rowNum) {
+                $dataSheet->getStyle("A{$rowNum}")->applyFromArray([
+                    'fill' => [
+                        'fillType'   => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'E2E8F0'],
+                    ],
+                    'font' => ['bold' => true, 'color' => ['rgb' => '1E293B']],
+                ]);
+            }
+
+            // Sheet protection: column A locked, B–E unlocked for user input
             $dataSheet->getProtection()->setSheet(true);
-
-            // Unlock all user-editable cells (B2:E through end of data + buffer)
-            $bufferRow = max($lastRow, 1000);
             $dataSheet->getStyle("B2:E{$bufferRow}")
                 ->getProtection()
                 ->setLocked(Protection::PROTECTION_UNPROTECTED);
@@ -287,7 +321,7 @@ class GalleyInventoryController extends Controller
         $refSheet->setSheetState(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::SHEETSTATE_VERYHIDDEN);
         $spreadsheet->setActiveSheetIndex(0);
 
-        // Supplier dropdown on column C
+        // Supplier dropdown on column C for all data rows
         if (! empty($suppliers)) {
             $suppCount = count($suppliers);
             $v = $dataSheet->getCell('C2')->getDataValidation();
@@ -298,7 +332,7 @@ class GalleyInventoryController extends Controller
             $v->setShowInputMessage(false);
             $v->setShowErrorMessage(false);
             $v->setFormula1("'_ref'!\$A\$1:\$A\${$suppCount}");
-            $v->setSqref('C2:C1000');
+            $v->setSqref("C2:C{$bufferRow}");
         }
 
         // Filename based on category filter
@@ -347,6 +381,12 @@ class GalleyInventoryController extends Controller
 
         $suppMap = Supplier::all()->keyBy(fn ($s) => strtolower(trim($s->name)));
 
+        // Category names used to silently skip category header rows in the template
+        $categoryNameSet = Category::where('department_id', $deptId)
+            ->pluck('name')
+            ->mapWithKeys(fn ($n) => [strtolower(trim($n)) => true])
+            ->toArray();
+
         $created  = [];
         $skipped  = [];
         $errors   = [];
@@ -360,8 +400,13 @@ class GalleyInventoryController extends Controller
             $dateRaw  = trim((string) ($row['date_received'] ?? ''));
             $notes    = trim((string) ($row['notes'] ?? ''));
 
-            // Skip rows with no item name
+            // Skip rows with no item name (silent)
             if ($itemName === '') {
+                continue;
+            }
+
+            // Silently skip category header rows inserted by the template
+            if ($qtyRaw === '' && isset($categoryNameSet[strtolower($itemName)])) {
                 continue;
             }
 
