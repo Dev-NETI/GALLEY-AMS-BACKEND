@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             ItemAssetSeeder::class,        // 8. Individual fixed-asset units + initial assignments
             InventoryStockSeeder::class,   // 9. Consumable stocks (no receival/issuance records)
             DepartmentUserSeeder::class,   // 10. One user account per department
+            UtensilItemSeeder::class,      // 11. Utensil items for all 3 categories
         ]);
     }
 }

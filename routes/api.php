@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\StockReceivalController;
 use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\UnitController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UtensilInventoryController;
+use App\Http\Controllers\Api\UtensilItemController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -99,4 +101,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('galley-inventory/template',  [GalleyInventoryController::class, 'template']);
     Route::post('galley-inventory/remark',   [GalleyInventoryController::class, 'saveRemark']);
     Route::get('galley-inventory',           [GalleyInventoryController::class, 'index']);
+
+    // ── Utensil item management (add/edit/delete/import per category) ─────────
+    Route::post('utensil-items/import',   [UtensilItemController::class, 'import']);
+    Route::get('utensil-items/template',  [UtensilItemController::class, 'template']);
+    Route::apiResource('utensil-items', UtensilItemController::class)
+        ->only(['index', 'store', 'update', 'destroy']);
+
+    // ── Utensil inventory (monthly fixed-asset tracking per category) ─────────
+    // Custom routes MUST be before the plain GET index to avoid path conflicts
+    Route::get('utensil-inventory/template', [UtensilInventoryController::class, 'template']);
+    Route::post('utensil-inventory/import',  [UtensilInventoryController::class, 'import']);
+    Route::get('utensil-inventory/history',  [UtensilInventoryController::class, 'history']);
+    Route::post('utensil-inventory/save',    [UtensilInventoryController::class, 'save']);
+    Route::get('utensil-inventory',          [UtensilInventoryController::class, 'index']);
 });
