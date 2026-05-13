@@ -191,7 +191,7 @@ class UtensilInventoryController extends Controller
             ->get()
             ->keyBy('utensil_item_id');
 
-        $headers  = ['Item Name', 'Beginning'];
+        $headers  = ['Item Name', 'Beginning', 'Add', 'Breakages', 'Ending'];
         $dataRows = [];
 
         foreach ($items as $item) {
@@ -200,21 +200,28 @@ class UtensilInventoryController extends Controller
 
             if ($current !== null) {
                 $beginning = (int) $current->beginning;
+                $add       = (int) $current->add_qty;
+                $breakages = (int) $current->breakages;
             } else {
                 $beginning = $prev
                     ? (int) $prev->beginning + (int) $prev->add_qty - (int) $prev->breakages
                     : 0;
+                $add       = 0;
+                $breakages = 0;
             }
 
-            $dataRows[] = [$item->name, $beginning];
+            $ending = $beginning + $add - $breakages;
+
+            $dataRows[] = [$item->name, $beginning, $add, $breakages, $ending];
         }
 
         $monthLabel = Carbon::createFromDate($year, $month, 1)->format('F Y');
         $note = "Category: {$category}\nMonth: {$monthLabel}\n\n" .
                 "• Do NOT rename or remove the 'Item Name' column — it is used to match rows on import.\n" .
-                "• Beginning: enter the starting quantity for each item.\n" .
-                "  (Pre-filled from last month's total where available.)\n" .
-                "• Add and Breakages can be entered directly in the inventory sheet after import.";
+                "• Beginning: starting quantity (pre-filled from last month's total where available).\n" .
+                "• Add: quantity added this month.\n" .
+                "• Breakages: quantity broken or lost this month.\n" .
+                "• Ending: auto-calculated (Beginning + Add − Breakages). Do not edit this column.";
 
         $spreadsheet = $this->createTemplateSpreadsheet($headers, $dataRows, $note);
         $slug        = str_replace('_', '-', $category);
@@ -272,18 +279,20 @@ class UtensilInventoryController extends Controller
             }
 
             $beginning = max(0, (int) ($row['beginning'] ?? 0));
+            $add       = max(0, (int) ($row['add']       ?? 0));
+            $breakages = max(0, (int) ($row['breakages'] ?? 0));
 
             UtensilInventoryRecord::updateOrCreate(
                 ['utensil_item_id' => $itemId, 'year' => $year, 'month' => $month],
-                ['beginning' => $beginning, 'add_qty' => 0, 'breakages' => 0]
+                ['beginning' => $beginning, 'add_qty' => $add, 'breakages' => $breakages]
             );
 
             UtensilInventoryLog::create([
                 'utensil_item_id' => $itemId,
                 'year'            => $year,
                 'month'           => $month,
-                'add_qty'         => 0,
-                'breakages'       => 0,
+                'add_qty'         => $add,
+                'breakages'       => $breakages,
                 'modified_by'     => auth()->id(),
             ]);
 
