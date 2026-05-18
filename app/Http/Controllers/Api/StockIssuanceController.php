@@ -136,4 +136,20 @@ class StockIssuanceController extends Controller
 
         return $this->created($issuance, 'Stock issued successfully');
     }
+
+    /**
+     * Update only the issued_to_other label on an existing issuance.
+     * PUT /api/stock-issuances/{stockIssuance}
+     */
+    public function update(Request $request, StockIssuance $stockIssuance): JsonResponse
+    {
+        $validated = $request->validate([
+            'issued_to_other' => 'required|string|max:500',
+        ]);
+
+        $stockIssuance->update($validated);
+        $stockIssuance->load(['item.unit', 'fromDepartment', 'issuable', 'issuedBy']);
+
+        return $this->success($stockIssuance, 'Issuance updated successfully');
+    }
 }
