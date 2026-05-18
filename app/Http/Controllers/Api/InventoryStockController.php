@@ -42,7 +42,31 @@ class InventoryStockController extends Controller
 
         $stocks = $query->orderBy('department_id')->orderBy('item_id')->get();
 
-        return $this->success($stocks);
+        // Include consumable items that have no stock record yet (virtual zero-quantity rows)
+        $stockedItemIds = $stocks->pluck('item_id')->unique()->all();
+
+        $unstockedItems = \App\Models\Item::where('item_type', 'consumable')
+            ->whereNotIn('id', $stockedItemIds)
+            ->with(['category', 'unit'])
+            ->orderBy('name')
+            ->get();
+
+        $departmentId = $user->isSystemAdmin()
+            ? ($request->filled('department_id') ? (int) $request->department_id : null)
+            : $user->department_id;
+
+        $virtualStocks = $unstockedItems->map(function ($item) use ($departmentId) {
+            $stock = new \App\Models\InventoryStock([
+                'item_id'       => $item->id,
+                'department_id' => $departmentId,
+                'quantity'      => 0,
+            ]);
+            $stock->setRelation('item', $item);
+
+            return $stock;
+        });
+
+        return $this->success($stocks->concat($virtualStocks)->values());
     }
 
     /**
