@@ -93,7 +93,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Issue consumable stock to person/department (creates StockIssuance + decrements InventoryStock)
     Route::apiResource('stock-issuances', StockIssuanceController::class)
-        ->only(['index', 'show', 'store']);
+        ->only(['index', 'show', 'store', 'update']);
 
     // ── Galley daily inventory sheet ──────────────────────────────────────────
     // Custom actions MUST be before the index GET to avoid route conflicts
