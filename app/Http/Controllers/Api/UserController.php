@@ -45,9 +45,9 @@ class UserController extends Controller
             'name'          => 'required|string|max:255',
             'email'         => 'required|email|max:255|unique:users,email',
             'password'      => 'required|string|min:8|confirmed',
-            'user_type'     => 'required|in:system_administrator,employee',
+            'user_type'     => 'required|in:system_administrator,employee,scanner',
             'department_id' => [
-                Rule::requiredIf(fn () => $request->input('user_type') === 'employee'),
+                Rule::requiredIf(fn () => in_array($request->input('user_type'), ['employee', 'scanner'])),
                 'nullable',
                 'exists:departments,id',
             ],
@@ -55,7 +55,7 @@ class UserController extends Controller
             'permissions.*' => 'string',
         ]);
 
-        // If admin role, clear department and permissions
+        // Only admin role clears department and permissions
         if ($validated['user_type'] === 'system_administrator') {
             $validated['department_id'] = null;
             $validated['permissions']   = null;
@@ -91,7 +91,7 @@ class UserController extends Controller
             'email'         => ['sometimes', 'required', 'email', 'max:255',
                                 Rule::unique('users', 'email')->ignore($user->id)],
             'password'      => 'nullable|string|min:8|confirmed',
-            'user_type'     => 'sometimes|required|in:system_administrator,employee',
+            'user_type'     => 'sometimes|required|in:system_administrator,employee,scanner',
             'department_id' => 'nullable|exists:departments,id',
             'permissions'   => 'nullable|array',
             'permissions.*' => 'string',
@@ -102,7 +102,7 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
-        // If switching to admin, clear department and permissions
+        // Only switching to admin clears department and permissions
         $newType = $validated['user_type'] ?? $user->user_type;
         if ($newType === 'system_administrator') {
             $validated['department_id'] = null;
