@@ -17,12 +17,21 @@ class DepartmentUserSeeder extends Seeder
             'categories',
             'suppliers',
             'items',
-            'item-assets',
-            'asset-assignments',
+            'units',
+            'canteen-utensils',
+            'vip-dining-utensils',
+            'storage-room-fdc',
             'inventory-stocks',
+            'galley-inventory',
+            'bottled-water-inventory',
+            'cleaning-materials-inventory',
             'stock-receivals',
             'stock-issuances',
-            'units'
+            'consumable-scanner',
+        ]);
+
+        $scannerDefaultPermissions = json_encode([
+            'consumable-scanner'
         ]);
 
         $users = [
@@ -41,6 +50,14 @@ class DepartmentUserSeeder extends Seeder
                 'user_type'     => 'employee',
                 'department_id' => $dept('GOD'),
                 'permissions'   => $defaultPermissions,
+            ],
+            [
+                'name'          => 'Scanner Boy',
+                'email'         => 'cosmicsher96@gmail.com',
+                'password'      => Hash::make('password'),
+                'user_type'     => 'scanner',
+                'department_id' => $dept('GOD'),
+                'permissions'   => $scannerDefaultPermissions,
             ],
         ];
 
